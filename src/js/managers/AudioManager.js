@@ -18,7 +18,7 @@ export default class AudioManager {
     this.audioContext = null
 
     this.song = {
-      url: `./src/Goosebumps.mp3`,
+      url: `./src/audio_files/Drake - Hotline Bling-uxpDa-c-4Mc.mp3`,
     }
   }
 

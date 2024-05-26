@@ -22,8 +22,9 @@ export default class App {
   init() {
     document.removeEventListener('click', this.onClickBinder)
 
-    //enter fullscreen if the user clicks anywhere on the screen
-    document.documentElement.onclick = function() {
+    
+    document.documentElement.onclick = function(event) {
+      //enter fullscreen if the user clicks anywhere on the screen 
       if (!document.fullscreenElement) {
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen();
@@ -33,6 +34,17 @@ export default class App {
           document.documentElement.webkitRequestFullscreen();
         } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
           document.documentElement.msRequestFullscreen();
+        }
+      }
+      
+      //pause/resume music when clicking in fullscreen mode on the left side of the screen
+      if (App.audioManager != null && document.fullscreenElement
+        && event.clientX < 500
+      ) {
+        if (App.audioManager.isPlaying) {
+          App.audioManager.pause()
+        } else {
+          App.audioManager.play()
         }
       }
     }
