@@ -16,10 +16,26 @@ export default class App {
   constructor() {
     this.onClickBinder = () => this.init()
     document.addEventListener('click', this.onClickBinder)
+    this.isAnimating = true; // Add this line
   }
 
   init() {
     document.removeEventListener('click', this.onClickBinder)
+
+    //enter fullscreen if the user clicks anywhere on the screen
+    document.documentElement.onclick = function() {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+          document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+          document.documentElement.msRequestFullscreen();
+        }
+      }
+    }
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -52,7 +68,8 @@ export default class App {
   }
 
   async createManagers() {
-    App.audioManager = new AudioManager()
+    //TODO add functionality to react to song switches via list
+    App.audioManager = new AudioManager(this)
     await App.audioManager.loadAudioBuffer()
 
     App.bpmManager = new BPMManager()
@@ -64,6 +81,7 @@ export default class App {
     document.querySelector('.user_interaction').remove()
 
     App.audioManager.play()
+
 
     this.particles = new ReativeParticles()
     this.particles.init()
@@ -81,11 +99,25 @@ export default class App {
   }
 
   update() {
-    requestAnimationFrame(() => this.update())
-
-    this.particles?.update()
-    App.audioManager.update()
-
-    this.renderer.render(this.scene, this.camera)
+      if (this.isAnimating) {
+        requestAnimationFrame(() => this.update())
+        this.particles?.update()
+        App.audioManager.update()
+        this.renderer.render(this.scene, this.camera)
+    }
   }
+
+  // Add these methods to control the animation
+  pauseAnimation() {
+    this.isAnimating = false;
+  }
+
+  resumeAnimation() {
+    if (!this.isAnimating) {
+      this.isAnimating = true;
+      this.update();
+    }
+  }
+
+  
 }

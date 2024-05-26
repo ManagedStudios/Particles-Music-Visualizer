@@ -12,8 +12,8 @@ export default class ReactiveParticles extends THREE.Object3D {
     this.properties = {
       startColor: 0xff00ff,
       endColor: 0x00ffff,
-      autoMix: true,
-      autoRotate: true,
+      autoMix: false,
+      autoRotate: false,
     }
   }
 
@@ -191,6 +191,7 @@ export default class ReactiveParticles extends THREE.Object3D {
   }
 
   addGUI() {
+    //TODO add a jump, go back button to switch songs
     //Add GUI controls
     const gui = App.gui
     const particlesFolder = gui.addFolder('PARTICLES')
@@ -231,5 +232,18 @@ export default class ReactiveParticles extends THREE.Object3D {
       },
     }
     visualizerFolder.add(buttonShowCylinder, 'showCylinder').name('Show Cylinder')
+    const buttonPauseMusic = {
+      showPause: () => {
+        App.audioManager.pause()
+      }
+    } 
+    visualizerFolder.add(buttonPauseMusic, 'showPause').name('Pause music')
+    const buttonResumeMusic = {
+      showResume: () => {
+        App.audioManager.play()
+      }
+    } 
+    visualizerFolder.add(buttonResumeMusic, 'showResume').name('Resume music')
+
   }
 }

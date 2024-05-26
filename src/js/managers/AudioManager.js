@@ -1,8 +1,10 @@
 import * as THREE from 'three'
 
 export default class AudioManager {
-  constructor() {
+  //TODO add functionality to pass song path in constructor
+  constructor(app) {
     this.frequencyArray = []
+    this.app = app
     this.frequencyData = {
       low: 0,
       mid: 0,
@@ -16,7 +18,7 @@ export default class AudioManager {
     this.audioContext = null
 
     this.song = {
-      url: 'https://p.scdn.co/mp3-preview/3be3fb77f5b2945c95e86d4c40ceceac20e5108f?cid=b62f0af3b0d54eca9bb49b99a2fc5820',
+      url: `./src/Goosebumps.mp3`,
     }
   }
 
@@ -43,13 +45,21 @@ export default class AudioManager {
   }
 
   play() {
-    this.audio.play()
-    this.isPlaying = true
+    if (!this.isPlaying) {
+      this.audio.play()
+      this.isPlaying = true
+      this.app.resumeAnimation()
+    }
+    
   }
 
   pause() {
-    this.audio.pause()
-    this.isPlaying = false
+    if (this.isPlaying) {
+      this.audio.pause()
+      this.isPlaying = false
+      this.app.pauseAnimation()
+    }
+    
   }
 
   collectAudioData() {
