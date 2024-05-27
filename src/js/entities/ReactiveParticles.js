@@ -42,18 +42,20 @@ export default class ReactiveParticles extends THREE.Object3D {
     })
 
     this.addGUI()
+    this.createInitialMesh()
     this.resetMesh()
+    
   }
 
-  createBoxMesh() {
+  createBoxMesh(width, height, depth, offset, rotationX, rotationZ) {
     // Randomly generate segment counts for width, height, and depth to create varied box geometries
-    let widthSeg = Math.floor(THREE.MathUtils.randInt(5, 20))
-    let heightSeg = Math.floor(THREE.MathUtils.randInt(1, 40))
-    let depthSeg = Math.floor(THREE.MathUtils.randInt(5, 80))
+    let widthSeg = Math.floor(width)
+    let heightSeg = Math.floor(height)
+    let depthSeg = Math.floor(depth)
     this.geometry = new THREE.BoxGeometry(1, 1, 1, widthSeg, heightSeg, depthSeg)
 
     // Update shader material uniform for offset size with a random value
-    this.material.uniforms.offsetSize.value = Math.floor(THREE.MathUtils.randInt(30, 60))
+    this.material.uniforms.offsetSize.value = Math.floor(offset)
     this.material.needsUpdate = true
 
     // Create a container for the points mesh and set its orientation
@@ -68,8 +70,9 @@ export default class ReactiveParticles extends THREE.Object3D {
     // Animate the rotation of the of the container
     gsap.to(this.pointsMesh.rotation, {
       duration: 3,
-      x: Math.random() * Math.PI,
-      z: Math.random() * Math.PI * 2,
+      x: rotationX,
+      z: rotationZ ,
+      y: 0.8 * Math.PI,
       ease: 'none', // No easing for a linear animation
     })
 
@@ -140,6 +143,10 @@ export default class ReactiveParticles extends THREE.Object3D {
     }
   }
 
+  createInitialMesh () {
+    this.destroyMesh()
+    this.createBoxMesh(25, 25, 25, 40, 0.7*Math.PI, 0.7*Math.PI)
+  }
   resetMesh() {
     if (this.properties.autoMix) {
       this.destroyMesh()
@@ -218,7 +225,10 @@ export default class ReactiveParticles extends THREE.Object3D {
     const buttonShowBox = {
       showBox: () => {
         this.destroyMesh()
-        this.createBoxMesh()
+        this.createBoxMesh(THREE.MathUtils.randInt(5, 20), THREE.MathUtils.randInt(1, 40),
+        THREE.MathUtils.randInt(5, 80), THREE.MathUtils.randInt(30, 60),
+        Math.random() * Math.PI, Math.random() * Math.PI
+      )
         this.properties.autoMix = false
       },
     }
@@ -234,13 +244,13 @@ export default class ReactiveParticles extends THREE.Object3D {
     visualizerFolder.add(buttonShowCylinder, 'showCylinder').name('Show Cylinder')
     const buttonPauseMusic = {
       showPause: () => {
-        App.audioManager.pause()
+        App.appInstance.pauseAnimation()
       }
     } 
     visualizerFolder.add(buttonPauseMusic, 'showPause').name('Pause music')
     const buttonResumeMusic = {
       showResume: () => {
-        App.audioManager.play()
+        App.appInstance.resumeAnimation()
       }
     } 
     visualizerFolder.add(buttonResumeMusic, 'showResume').name('Resume music')

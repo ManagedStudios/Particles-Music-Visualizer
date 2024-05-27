@@ -12,11 +12,13 @@ export default class App {
   //Managers
   static audioManager = null
   static bpmManager = null
+  static appInstance = null
 
   constructor() {
+    this.isAnimating = true; // Add this line
+    App.appInstance = this
     this.onClickBinder = () => this.init()
     document.addEventListener('click', this.onClickBinder)
-    this.isAnimating = true; // Add this line
   }
 
   init() {
@@ -41,10 +43,10 @@ export default class App {
       if (App.audioManager != null && document.fullscreenElement
         && event.clientX < 500
       ) {
-        if (App.audioManager.isPlaying) {
-          App.audioManager.pause()
+        if (App.appInstance.isAnimating) {
+          App.appInstance.pauseAnimation()
         } else {
-          App.audioManager.play()
+          App.appInstance.resumeAnimation()
         }
       }
     }
@@ -81,7 +83,7 @@ export default class App {
 
   async createManagers() {
     //TODO add functionality to react to song switches via list
-    App.audioManager = new AudioManager(this)
+    App.audioManager = new AudioManager()
     await App.audioManager.loadAudioBuffer()
 
     App.bpmManager = new BPMManager()
@@ -120,12 +122,14 @@ export default class App {
   }
 
   // Add these methods to control the animation
-  pauseAnimation() {
+   pauseAnimation() {
+    App.audioManager.pause()
     this.isAnimating = false;
   }
 
-  resumeAnimation() {
+   resumeAnimation() {
     if (!this.isAnimating) {
+      App.audioManager.play()
       this.isAnimating = true;
       this.update();
     }

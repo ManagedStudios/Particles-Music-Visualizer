@@ -2,9 +2,8 @@ import * as THREE from 'three'
 
 export default class AudioManager {
   //TODO add functionality to pass song path in constructor
-  constructor(app) {
+  constructor() {
     this.frequencyArray = []
-    this.app = app
     this.frequencyData = {
       low: 0,
       mid: 0,
@@ -18,7 +17,7 @@ export default class AudioManager {
     this.audioContext = null
 
     this.song = {
-      url: `./src/audio_files/Drake - Hotline Bling-uxpDa-c-4Mc.mp3`,
+      url: `./src/audio_files/Numb-7GC7eI9c-20.mp3`,
     }
   }
 
@@ -48,7 +47,7 @@ export default class AudioManager {
     if (!this.isPlaying) {
       this.audio.play()
       this.isPlaying = true
-      this.app.resumeAnimation()
+    
     }
     
   }
@@ -57,7 +56,7 @@ export default class AudioManager {
     if (this.isPlaying) {
       this.audio.pause()
       this.isPlaying = false
-      this.app.pauseAnimation()
+      
     }
     
   }
