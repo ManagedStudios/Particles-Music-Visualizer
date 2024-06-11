@@ -3,6 +3,7 @@ import ReativeParticles from './entities/ReactiveParticles'
 import * as dat from 'dat.gui'
 import BPMManager from './managers/BPMManager'
 import AudioManager from './managers/AudioManager'
+import Songs from '@/Songs.js'
 
 export default class App {
   //THREE objects
@@ -13,15 +14,19 @@ export default class App {
   static audioManager = null
   static bpmManager = null
   static appInstance = null
+  static currSongIndex = 0;
 
   constructor() {
     this.isAnimating = true; // Add this line
     App.appInstance = this
     this.onClickBinder = () => this.init()
     document.addEventListener('click', this.onClickBinder)
+    this.animationFrameId = null;
+
   }
 
   init() {
+    console.log("song", Songs.songList)
     document.removeEventListener('click', this.onClickBinder)
 
     
@@ -39,51 +44,104 @@ export default class App {
         }
       }
       
-      //pause/resume music when clicking in fullscreen mode on the left side of the screen
-      if (App.audioManager != null && document.fullscreenElement
-        && event.clientX < 500
-      ) {
+      
+      
+    }
+
+    
+
+    document.documentElement.onkeydown = function (event) {
+      //pause/resume music when clicking leertaste 
+      if (App.audioManager != null && event.key === ' ' ) {
         if (App.appInstance.isAnimating) {
           App.appInstance.pauseAnimation()
         } else {
           App.appInstance.resumeAnimation()
         }
       }
+      
+      if (event.key === 'ArrowRight') {
+        this.isAnimating = false;
+        App.currSongIndex += 1
+
+        App.appInstance.start(Songs.songList[App.currSongIndex])
+        
+        App.appInstance.isAnimating = true;
+      } else if (event.key === 'ArrowLeft') {
+
+      }
     }
 
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-    })
-
-    this.renderer.setClearColor(0x000000, 0)
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
-    this.renderer.autoClear = false
-    document.querySelector('.content').appendChild(this.renderer.domElement)
-
-    this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10000)
-    this.camera.position.z = 12
-    this.camera.frustumCulled = false
-
-    this.scene = new THREE.Scene()
-    this.scene.add(this.camera)
-
-    App.holder = new THREE.Object3D()
-    App.holder.name = 'holder'
-    this.scene.add(App.holder)
-    App.holder.sortObjects = false
-
-    App.gui = new dat.GUI()
-
-    this.createManagers()
-
-    this.resize()
-    window.addEventListener('resize', () => this.resize())
+    this.start(Songs.songList[App.currSongIndex])
+    
   }
 
-  async createManagers() {
+  
+    start(songPath) {
+      // Dispose of previous instances if they exist
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+      if (this.renderer) {
+        this.renderer.dispose();
+        document.querySelector('.content').removeChild(this.renderer.domElement);
+      }
+      if (App.gui) {
+        App.gui.destroy();
+      }
+      // Assuming you have a method to stop and dispose of the current audio
+      if (App.audioManager) {
+        App.audioManager.stopAndDispose();
+        App.audioManager = null;
+      }
+    
+      // Recreate renderer
+      this.renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+      });
+      this.renderer.setClearColor(0x000000, 0);
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.autoClear = false;
+      document.querySelector('.content').appendChild(this.renderer.domElement);
+    
+      // Recreate camera
+      this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10000);
+      this.camera.position.z = 12;
+      this.camera.frustumCulled = false;
+    
+      // Recreate scene
+      this.scene = new THREE.Scene();
+      this.scene.add(this.camera);
+    
+      // Reset or recreate holder
+      if (App.holder) {
+        // Assuming you have a method to properly dispose of or reset App.holder
+        this.scene.remove(App.holder);
+      }
+      App.holder = new THREE.Object3D();
+      App.holder.name = 'holder';
+      this.scene.add(App.holder);
+      App.holder.sortObjects = false;
+    
+      // Recreate GUI
+      App.gui = new dat.GUI();
+    
+      // Load the song and other resources
+      this.createManagers(songPath);
+    
+      // Resize listener
+      // Consider removing the previous event listener if possible before adding a new one
+      window.removeEventListener('resize', this.boundResize);
+      this.boundResize = () => this.resize();
+      window.addEventListener('resize', this.boundResize);
+    }
+  
+
+  async createManagers(songPath) {
     //TODO add functionality to react to song switches via list
-    App.audioManager = new AudioManager()
+    App.audioManager = new AudioManager(songPath)
     await App.audioManager.loadAudioBuffer()
 
     App.bpmManager = new BPMManager()
@@ -92,7 +150,10 @@ export default class App {
     })
     await App.bpmManager.detectBPM(App.audioManager.audio.buffer)
 
-    document.querySelector('.user_interaction').remove()
+    try {
+      document.querySelector('.user_interaction').remove()
+    }catch(e) {}
+      
 
     App.audioManager.play()
 
@@ -114,9 +175,13 @@ export default class App {
 
   update() {
       if (this.isAnimating) {
-        requestAnimationFrame(() => this.update())
+        if (this.animationFrameId) {
+          cancelAnimationFrame(this.animationFrameId);
+        }
+        this.animationFrameId = requestAnimationFrame(() => this.update())
         this.particles?.update()
         App.audioManager.update()
+  
         this.renderer.render(this.scene, this.camera)
     }
   }

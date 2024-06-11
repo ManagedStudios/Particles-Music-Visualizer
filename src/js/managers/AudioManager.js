@@ -2,7 +2,7 @@ import * as THREE from 'three'
 
 export default class AudioManager {
   //TODO add functionality to pass song path in constructor
-  constructor() {
+  constructor(songPath = `./src/audio_files/Come 2gether-Hk5C6RpJ5N4.mp3`) {
     this.frequencyArray = []
     this.frequencyData = {
       low: 0,
@@ -15,9 +15,10 @@ export default class AudioManager {
     this.highFrequency = 9000 //2000Hz to 20000Hz
     this.smoothedLowFrequency = 0
     this.audioContext = null
+    this.songPath = songPath
 
     this.song = {
-      url: `./src/audio_files/Numb-7GC7eI9c-20.mp3`,
+      url: this.songPath,
     }
   }
 
@@ -103,5 +104,12 @@ export default class AudioManager {
 
     this.collectAudioData()
     this.analyzeFrequency()
+  }
+
+  stopAndDispose() {
+    // Stop the audio if it is playing
+    this.audio.stop()
+    this.isPlaying = false;
+  
   }
 }

@@ -198,7 +198,7 @@ export default class ReactiveParticles extends THREE.Object3D {
   }
 
   addGUI() {
-    //TODO add a jump, go back button to switch songs
+
     //Add GUI controls
     const gui = App.gui
     const particlesFolder = gui.addFolder('PARTICLES')
