@@ -61,14 +61,19 @@ export default class App {
       }
       
       if (event.key === 'ArrowRight') {
-        this.isAnimating = false;
+        App.appInstance.isAnimating = false;
         App.currSongIndex += 1
 
         App.appInstance.start(Songs.songList[App.currSongIndex])
         
         App.appInstance.isAnimating = true;
       } else if (event.key === 'ArrowLeft') {
+        App.appInstance.isAnimating = false;
+        App.currSongIndex -= 1
 
+        App.appInstance.start(Songs.songList[App.currSongIndex])
+
+        App.appInstance.isAnimating = true;
       }
     }
 
@@ -140,7 +145,6 @@ export default class App {
   
 
   async createManagers(songPath) {
-    //TODO add functionality to react to song switches via list
     App.audioManager = new AudioManager(songPath)
     await App.audioManager.loadAudioBuffer()
 
